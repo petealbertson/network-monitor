@@ -1,0 +1,14 @@
+[Unit]
+Description=Network Monitor
+After=network.target
+
+[Service]
+Type=simple
+User=exedev
+WorkingDirectory=/home/exedev/network-monitor
+ExecStart=/home/exedev/network-monitor/network-monitor /home/exedev/network-monitor/config.json
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
