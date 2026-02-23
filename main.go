@@ -45,10 +45,25 @@ func loadConfig(path string) (Config, error) {
 }
 
 func (m *Monitor) ping() bool {
+	// Check if target is a URL (HTTP check) or host (ICMP ping)
+	if strings.HasPrefix(m.config.Target, "http://") || strings.HasPrefix(m.config.Target, "https://") {
+		return m.httpCheck()
+	}
 	// Use ping command with 3 attempts, 2 second timeout each
 	cmd := exec.Command("ping", "-c", "3", "-W", "2", m.config.Target)
 	err := cmd.Run()
 	return err == nil
+}
+
+func (m *Monitor) httpCheck() bool {
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(m.config.Target)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	// Any response (even 401, 403) means the server is reachable
+	return resp.StatusCode > 0
 }
 
 func (m *Monitor) sendTelegram(message string) error {
